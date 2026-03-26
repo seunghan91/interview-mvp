@@ -1405,10 +1405,11 @@ async function downloadPdf(id) {
 
     const container = document.createElement('div');
     Object.assign(container.style, {
-      position: 'fixed', left: '-9999px', top: '0',
+      position: 'absolute', left: '0', top: '0',
       width: '210mm', padding: '28px 32px',
       background: '#f5f5f4', color: '#1a1a1a',
-      fontFamily: "'Pretendard Variable', -apple-system, sans-serif"
+      fontFamily: "'Pretendard Variable', -apple-system, sans-serif",
+      zIndex: '-9999', opacity: '0.01'
     });
 
     // Header
