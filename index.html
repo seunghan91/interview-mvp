@@ -1402,25 +1402,40 @@ async function downloadPdf(id) {
     // 화면에 보이는 show-content를 직접 캡처
     const el = document.getElementById('show-content');
 
-    // export 버튼 영역과 back/action 바를 숨기고 캡처
-    const hideEls = el.querySelectorAll('.export-buttons, .back-link, .btn-export, .btn-delete');
-    const firstChild = el.firstElementChild; // back + actions bar
-    if (firstChild) firstChild.style.display = 'none';
-    const lastCard = el.lastElementChild; // export card
-    if (lastCard && lastCard.querySelector('.export-buttons')) lastCard.style.display = 'none';
+    // PDF에 불필요한 요소 숨기기 (back 버튼, 수정/삭제, export 버튼)
+    const hiddenEls = [];
+    el.querySelectorAll('.back-link, .btn-export, .btn-delete, .export-buttons').forEach(function(e) {
+      hiddenEls.push({ el: e, prev: e.style.display });
+      e.style.display = 'none';
+    });
+    // back+actions 바 전체 숨기기 (첫번째 div)
+    const actionsBar = el.querySelector('div[style*="justify-content:space-between"]');
+    if (actionsBar) { hiddenEls.push({ el: actionsBar, prev: actionsBar.style.display }); actionsBar.style.display = 'none'; }
+    // 프레젠테이션 섹션(6번) 전체 숨기기
+    const cards = el.querySelectorAll('.card');
+    const lastCard = cards[cards.length - 1];
+    if (lastCard && lastCard.querySelector('.export-buttons')) {
+      hiddenEls.push({ el: lastCard, prev: lastCard.style.display });
+      lastCard.style.display = 'none';
+    }
 
     await html2pdf().set({
-      margin: [10, 10],
+      margin: [12, 12, 12, 12],
       filename: name + '_AI_여정_요약.pdf',
-      image: { type: 'jpeg', quality: 0.95 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f5f5f4', scrollY: 0, windowWidth: 800 },
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#f5f5f4',
+        scrollY: -window.scrollY,
+        windowWidth: 800
+      },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      pagebreak: { mode: ['css', 'legacy'] }
     }).from(el).save();
 
-    // 다시 보이게
-    if (firstChild) firstChild.style.display = '';
-    if (lastCard && lastCard.querySelector('.export-buttons')) lastCard.style.display = '';
+    // 숨긴 요소 복원
+    hiddenEls.forEach(function(h) { h.el.style.display = h.prev; });
 
     showToast('PDF 다운로드 완료!');
   } catch (e) {
