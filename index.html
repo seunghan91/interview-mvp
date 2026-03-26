@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>광화문 라이언즈 - AI 여정 인터뷰</title>
+<style>
+  :root {
+    --color-primary-50: #fff7ed;
+    --color-primary-100: #ffedd5;
+    --color-primary-500: #f97316;
+    --color-primary-600: #ea580c;
+    --color-primary-700: #c2410c;
+    --text-primary: #1c1917;
+    --text-secondary: #44403c;
+    --text-tertiary: #78716c;
+    --surface-primary: #ffffff;
+    --surface-secondary: #fafaf9;
+    --surface-tertiary: #f5f5f4;
+    --border-default: #e7e5e4;
+    --color-success-50: #f0fdf4;
+    --color-success-600: #16a34a;
+    --color-success-700: #15803d;
+    --color-error-50: #fef2f2;
+    --color-error-600: #dc2626;
+    --shadow-1: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    background: var(--surface-tertiary);
+    color: var(--text-primary);
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+
+  /* Header */
+  .app-header {
+    background: var(--surface-primary);
+    border-bottom: 1px solid var(--border-default);
+    padding: 16px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .app-header h1 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .app-header p {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+  }
+
+  /* Main Tabs */
+  .main-tabs {
+    display: flex;
+    background: var(--surface-primary);
+    border-bottom: 1px solid var(--border-default);
+    position: sticky;
+    top: 60px;
+    z-index: 99;
+  }
+  .main-tab {
+    flex: 1;
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .main-tab.active {
+    color: var(--color-primary-500);
+    border-bottom-color: var(--color-primary-500);
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface-primary);
+    border: 1px solid var(--border-default);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow-1);
+  }
+
+  /* Progress Bar */
+  .progress-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--surface-tertiary);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--color-primary-500);
+    transition: width 0.3s;
+  }
+
+  /* Wizard Tabs */
+  .wizard-tabs {
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border-default);
+    margin-bottom: 20px;
+    scrollbar-width: none;
+  }
+  .wizard-tabs::-webkit-scrollbar { display: none; }
+  .wizard-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 4px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    color: var(--text-tertiary);
+    transition: all 0.2s;
+  }
+  .wizard-tab.active {
+    color: var(--color-primary-500);
+    border-bottom-color: var(--color-primary-500);
+  }
+  .wizard-tab .num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--color-primary-50);
+    color: var(--color-primary-600);
+    flex-shrink: 0;
+  }
+  .wizard-tab .label { display: none; }
+  @media (min-width: 640px) {
+    .wizard-tab .label { display: inline; }
+  }
+
+  /* Step Header */
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-default);
+    margin-bottom: 20px;
+  }
+  .step-num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    background: var(--color-primary-50);
+    color: var(--color-primary-600);
+    flex-shrink: 0;
+  }
+  .step-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .step-subtitle {
+    font-size: 14px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+    line-height: 1.6;
+  }
+  .step-count {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+  }
+
+  /* Form Fields */
+  .field-group { margin-bottom: 16px; }
+  .field-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+  .field-input, .field-textarea {
+    width: 100%;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.6;
+    background: var(--surface-secondary);
+    border: 1px solid var(--border-default);
+    padding: 12px 16px;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+  }
+  .field-input:focus, .field-textarea:focus {
+    border-color: var(--color-primary-500);
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+  }
+  .field-textarea {
+    resize: none;
+    overflow: hidden;
+    min-height: 80px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  @media (min-width: 640px) {
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  /* Button Select */
+  .btn-select-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  @media (min-width: 640px) {
+    .btn-select-group { grid-template-columns: repeat(3, 1fr); }
+  }
+  .btn-select {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface-primary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-default);
+  }
+  .btn-select.selected {
+    background: var(--color-primary-50);
+    color: var(--color-primary-700);
+    border-color: var(--color-primary-600);
+  }
+
+  /* Section Header (slide 4) */
+  .section-header {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding-top: 8px;
+    margin-bottom: 12px;
+  }
+
+  /* Nav Buttons */
+  .nav-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary {
+    background: var(--surface-secondary);
+    color: var(--text-secondary);
+  }
+  .btn-primary {
+    background: var(--color-primary-500);
+    color: #fff;
+  }
+  .btn-success {
+    background: var(--color-success-600);
+    color: #fff;
+  }
+  .btn:hover { opacity: 0.9; }
+  .btn.invisible { visibility: hidden; }
+  .auto-save-label {
+    font-size: 13px;
+    color: var(--text-tertiary);
+  }
+
+  /* Gallery */
+  .gallery-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (min-width: 640px) {
+    .gallery-header {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+  .gallery-title {
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .gallery-count {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+  }
+  .search-box {
+    position: relative;
+  }
+  .search-box svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--text-tertiary);
+  }
+  .search-input {
+    padding: 8px 16px 8px 36px;
+    border-radius: 12px;
+    font-size: 13px;
+    width: 240px;
+    background: var(--surface-secondary);
+    border: 1px solid var(--border-default);
+    color: var(--text-primary);
+    outline: none;
+  }
+  .search-input:focus {
+    border-color: var(--color-primary-500);
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 768px) {
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 1024px) {
+    .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .gallery-card {
+    display: block;
+    background: var(--surface-primary);
+    border: 1px solid var(--border-default);
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
+  }
+  .gallery-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transform: translateY(-1px);
+  }
+  .gallery-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .gallery-card-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .gallery-card:hover .gallery-card-name {
+    color: var(--color-primary-500);
+  }
+  .gallery-card-role {
+    font-size: 13px;
+    color: var(--text-tertiary);
+  }
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    background: var(--color-primary-50);
+    color: var(--color-primary-600);
+    flex-shrink: 0;
+  }
+  .gallery-card-meta {
+    margin-bottom: 12px;
+  }
+  .gallery-card-meta-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-bottom: 2px;
+  }
+  .gallery-card-meta-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .gallery-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-default);
+  }
+  .gallery-card-date {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+  .gallery-card-link {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-primary-500);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .gallery-card:hover .gallery-card-link { opacity: 1; }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    border-radius: 16px;
+    background: var(--surface-primary);
+    border: 2px dashed var(--border-default);
+  }
+  .empty-state svg {
+    width: 48px;
+    height: 48px;
+    color: var(--text-tertiary);
+    margin-bottom: 16px;
+  }
+  .empty-state h3 {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .empty-state p {
+    font-size: 14px;
+    color: var(--text-tertiary);
+  }
+
+  /* Show View */
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .profile-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+    background: var(--color-primary-50);
+    color: var(--color-primary-600);
+    flex-shrink: 0;
+  }
+  .profile-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .profile-meta {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+  }
+  .profile-note {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+  }
+  .section-title-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border-default);
+  }
+  .section-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--color-primary-50);
+    color: var(--color-primary-600);
+    flex-shrink: 0;
+  }
+  .section-title-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .field-dt {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+  .field-dd {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+  }
+
+  /* Export buttons */
+  .export-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .btn-export {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--border-default);
+    background: var(--surface-secondary);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-export:hover { background: var(--surface-tertiary); }
+  .btn-export.primary {
+    background: var(--color-primary-500);
+    color: #fff;
+    border-color: var(--color-primary-500);
+  }
+
+  /* Back link */
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    background: none;
+    border: none;
+    margin-bottom: 12px;
+  }
+  .back-link:hover { color: var(--color-primary-500); }
+
+  /* Utilities */
+  .hidden { display: none !important; }
+  .space-y > * + * { margin-top: 16px; }
+  .space-y-sm > * + * { margin-top: 12px; }
+  .mt-4 { margin-top: 16px; }
+
+  /* Name Input Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 16px;
+  }
+  .modal-content {
+    background: var(--surface-primary);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .modal-desc {
+    font-size: 14px;
+    color: var(--text-tertiary);
+    margin-bottom: 16px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--text-primary);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 300;
+    transition: transform 0.3s;
+    pointer-events: none;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Delete button */
+  .btn-delete {
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--color-error-50);
+    color: var(--color-error-600);
+    border: none;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="app-header">
+  <h1>광화문 라이언즈 AI 여정 인터뷰</h1>
+  <p>비상용 · 권한 없이 누구나 작성 가능</p>
+</header>
+
+<!-- Main Tabs -->
+<nav class="main-tabs">
+  <button class="main-tab active" onclick="switchView('wizard')">인터뷰 작성</button>
+  <button class="main-tab" onclick="switchView('gallery')">전체 갤러리</button>
+</nav>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Wizard View -->
+<div id="view-wizard" class="container" style="padding-bottom: 80px;">
+  <div class="space-y">
+    <!-- Progress -->
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width: 20%;"></div>
+    </div>
+
+    <!-- Wizard Step Tabs -->
+    <nav class="wizard-tabs" id="wizard-tabs"></nav>
+
+    <!-- Step Panels -->
+    <div id="step-panels"></div>
+
+    <!-- Nav Buttons -->
+    <div class="nav-buttons">
+      <button class="btn btn-secondary invisible" id="btn-prev" onclick="prevStep()">← 이전</button>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span class="auto-save-label" id="save-status">자동 저장됨</span>
+        <button class="btn btn-primary" id="btn-next" onclick="nextStep()">다음 →</button>
+        <button class="btn btn-success hidden" id="btn-publish" onclick="publishInterview()">게시하기 ✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Gallery View -->
+<div id="view-gallery" class="container hidden" style="padding-bottom: 80px;">
+  <div class="gallery-header">
+    <div>
+      <h1 class="gallery-title">인터뷰 갤러리</h1>
+      <p class="gallery-count" id="gallery-count">0개의 인터뷰</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="search-box">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" class="search-input" id="search-input" placeholder="이름, 직무, 프로젝트 검색..." oninput="renderGallery()">
+      </div>
+      <button class="btn btn-primary" style="font-size:13px;padding:8px 16px;" onclick="switchView('wizard')">+ 새 인터뷰</button>
+    </div>
+  </div>
+  <div id="gallery-grid"></div>
+</div>
+
+<!-- Show View -->
+<div id="view-show" class="container hidden" style="padding-bottom: 80px;">
+  <div class="space-y" id="show-content"></div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const SLIDES = [
+  { num: 1, title: "나를 소개합니다", tabLabel: "나를 소개합니다", subtitle: "인터뷰의 시작입니다. 본인과 진행했던 프로젝트에 대해 소개해주세요.", fields: [
+    { key: "name", label: "이름", placeholder: "홍길동", type: "text", grid: true },
+    { key: "role", label: "직무", placeholder: "프로덕트 매니저", type: "text", grid: true },
+    { key: "years", label: "연차", placeholder: "5년차", type: "text", grid: true },
+    { key: "projectName", label: "프로젝트명", placeholder: "AI 기반 고객 문의 자동 분류 시스템", type: "text" },
+    { key: "problemDefinition", label: "문제 정의", placeholder: "어떤 문제를 해결하고자 했나요?", type: "textarea" },
+    { key: "retrospective", label: "지금 돌아보면 그 과제는?", type: "button_select", options: ["그대로 진행했다", "더 뾰족해졌다", "방향이 바뀌었다"] }
+  ]},
+  { num: 2, title: "나의 Before, AI를 만나기 전 나는", tabLabel: "나의 Before", subtitle: "AI를 본격적으로 업무에 도입하기 전의 상황을 떠올려보세요.", fields: [
+    { key: "bottleneck", label: "업무에서 가장 힘들었던 반복 작업 또는 병목지점", placeholder: "예: 매주 수십 개의 고객 피드백을 수동으로 읽고 엑셀에 분류하는 작업이 너무 많은 시간을 차지했습니다.", type: "textarea" },
+    { key: "aiPerception", label: "AI에 대해 갖고 있던 인식 또는 두려움", placeholder: "예: AI가 내 일자리를 대체하지 않을까 하는 막연한 두려움이 있었고, 코딩을 모르면 활용하기 어려울 것이라고 생각했습니다.", type: "textarea" }
+  ]},
+  { num: 3, title: "내가 시도한 것들", tabLabel: "내가 시도한 것들", subtitle: "AI를 활용해 문제를 해결하기 위해 어떤 시도를 했는지 공유해주세요.", fields: [
+    { key: "toolsUsed", label: "사용한 도구", placeholder: "예: Claude 3.5 Sonnet, ChatGPT, Gemini, Zapier 등", type: "textarea" },
+    { key: "actualApplication", label: "실제로 해본 것 (어떤 업무에 어떻게 적용했는지 구체적으로)", placeholder: "예: 고객 피드백 텍스트를 Claude에 입력하고, 긍정/부정 및 주요 키워드를 추출하도록 프롬프트를 작성했습니다.", type: "textarea" },
+    { key: "blockers", label: "막혔던 순간 (어떤 벽을 만났고, 어떻게 넘었는가 또는 아직 못 넘었는가)", placeholder: "예: AI가 가끔 엉뚱한 분류를 하는 '할루시네이션' 문제가 있었습니다.", type: "textarea" }
+  ]},
+  { num: 4, title: "나의 After : 멘탈모델의 변화", tabLabel: "나의 After", subtitle: "가장 중요한 부분입니다. AI를 경험하며 생각이 어떻게 바뀌었는지 적어주세요.", fields: [
+    { type: "section_header", label: "1. AI를 도구가 아닌 동료로 인식했는가?" },
+    { key: "colleagueShift", label: "지시하는 것에서 협업하는 것으로 어떻게 바뀌었나요?", placeholder: "단순히 '이거 해줘'가 아니라, '이 문제를 어떻게 해결하면 좋을까?'라고 묻기 시작했습니다.", type: "textarea" },
+    { key: "colleagueDetails", label: "믿고 신뢰하며 키우는 에이전트 동료가 생겼나요?", placeholder: "나만의 맞춤형 GPT를 만들었습니다. 내 업무 스타일을 학습시키기 위해 수많은 피드백을 주었고...", type: "textarea" },
+    { type: "section_header", label: "2. 톱니바퀴가 아닌 시스템 설계자로 인식했는가?" },
+    { key: "systemDesignerShift", label: "내 업무를 AI에게 위임하는 구조를 어떻게 설계했나요?", placeholder: "과거에는 내가 직접 데이터를 정제했다면, 이제는 데이터가 들어오면 AI가 1차 정제하고 내가 최종 검수하는 파이프라인을 만들었습니다.", type: "textarea" },
+    { key: "systemDesignerDetails", label: "역할의 확장: 전에는 못했던 일 중 AI를 통해 할 수 있게 된 것은?", placeholder: "코딩을 전혀 몰랐지만, AI의 도움으로 간단한 자동화 스크립트를 직접 작성하고 실행할 수 있게 되었습니다.", type: "textarea" },
+    { type: "section_header", label: "3. 내 암묵지를 형식지로 전환했는가?" },
+    { key: "tacitToExplicit", label: "머릿속에만 있던 업무 노하우를 문서화해서 AI에게 학습시킨 경험", placeholder: "'좋은 기획서'에 대한 나만의 감각을 명확한 체크리스트와 프롬프트로 문서화하여 AI가 평가할 수 있도록 만들었습니다.", type: "textarea" }
+  ]},
+  { num: 5, title: "앞으로의 나", tabLabel: "앞으로의 나", subtitle: "이 경험을 바탕으로 앞으로 어떻게 나아갈지 계획을 세워보세요.", fields: [
+    { key: "nextSteps", label: "이 경험을 바탕으로 다음에 할 것", placeholder: "예: 이번에 만든 간단한 자동화 스크립트를 발전시켜서, 팀 전체가 사용할 수 있는 내부 툴로 고도화해보고 싶습니다.", type: "textarea" },
+    { key: "teamApplication", label: "팀/조직에 어떻게 적용하거나 전파할지", placeholder: "예: 매주 금요일 팀 회의에서 10분씩 '이주의 AI 활용 팁'을 공유하는 시간을 만들 예정입니다.", type: "textarea" },
+    { key: "personalRoutine", label: "광화문 라이언즈 이후에도 유지할 나만의 루틴", placeholder: "예: 매일 아침 30분씩 최신 AI 트렌드를 읽고, 내 업무에 적용할 수 있는 아이디어를 하나씩 기록하는 루틴을 유지하겠습니다.", type: "textarea" }
+  ]}
+];
+
+const SHOW_SECTIONS = [
+  { num: 1, title: "나를 소개합니다", fields: [
+    { key: "name", label: "이름" }, { key: "role", label: "직무" }, { key: "years", label: "연차" },
+    { key: "projectName", label: "프로젝트명" }, { key: "problemDefinition", label: "문제 정의" },
+    { key: "retrospective", label: "지금 돌아보면 그 과제는?" }
+  ]},
+  { num: 2, title: "나의 Before, AI를 만나기 전 나는", fields: [
+    { key: "bottleneck", label: "업무에서 가장 힘들었던 반복 작업 또는 병목지점" },
+    { key: "aiPerception", label: "AI에 대해 갖고 있던 인식 또는 두려움" }
+  ]},
+  { num: 3, title: "내가 시도한 것들", fields: [
+    { key: "toolsUsed", label: "사용한 도구" }, { key: "actualApplication", label: "실제로 해본 것" },
+    { key: "blockers", label: "막혔던 순간" }
+  ]},
+  { num: 4, title: "나의 After : 멘탈모델의 변화", fields: [
+    { key: "colleagueShift", label: "지시 → 협업으로의 변화" }, { key: "colleagueDetails", label: "에이전트 동료" },
+    { key: "systemDesignerShift", label: "AI 위임 구조 설계" }, { key: "systemDesignerDetails", label: "역할의 확장" },
+    { key: "tacitToExplicit", label: "암묵지 → 형식지 전환" }
+  ]},
+  { num: 5, title: "앞으로의 나", fields: [
+    { key: "nextSteps", label: "다음에 할 것" }, { key: "teamApplication", label: "팀/조직 적용 및 전파 계획" },
+    { key: "personalRoutine", label: "광화문 라이언즈 이후 유지할 나만의 루틴" }
+  ]}
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentStep = 1;
+let currentInterviewId = null; // id of interview being edited
+let currentView = 'wizard';
+
+// ============================================================
+// STORAGE
+// ============================================================
+function getInterviews() {
+  try { return JSON.parse(localStorage.getItem('interviews_mvp') || '[]'); }
+  catch { return []; }
+}
+function saveInterviews(list) {
+  localStorage.setItem('interviews_mvp', JSON.stringify(list));
+}
+function getInterview(id) {
+  return getInterviews().find(i => i.id === id);
+}
+function upsertInterview(data) {
+  const list = getInterviews();
+  const idx = list.findIndex(i => i.id === data.id);
+  if (idx >= 0) list[idx] = data;
+  else list.unshift(data);
+  saveInterviews(list);
+}
+function deleteInterview(id) {
+  saveInterviews(getInterviews().filter(i => i.id !== id));
+}
+function newInterviewId() {
+  return 'iv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  buildWizardTabs();
+  buildStepPanels();
+  // start new blank interview
+  startNewInterview();
+}
+
+function startNewInterview() {
+  currentInterviewId = newInterviewId();
+  const interview = {
+    id: currentInterviewId,
+    slide1: {}, slide2: {}, slide3: {}, slide4: {}, slide5: {},
+    status: 'draft',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  upsertInterview(interview);
+  currentStep = 1;
+  loadInterviewIntoForm(interview);
+  showStep(1);
+}
+
+function editInterview(id) {
+  const iv = getInterview(id);
+  if (!iv) return;
+  currentInterviewId = id;
+  loadInterviewIntoForm(iv);
+  currentStep = 1;
+  showStep(1);
+  switchView('wizard');
+}
+
+function loadInterviewIntoForm(iv) {
+  SLIDES.forEach(slide => {
+    const data = iv['slide' + slide.num] || {};
+    slide.fields.forEach(f => {
+      if (f.type === 'section_header') return;
+      const el = document.querySelector(`[data-slide="${slide.num}"][data-field="${f.key}"]`);
+      if (!el) return;
+      if (f.type === 'button_select') {
+        el.value = data[f.key] || '';
+        // update button styles
+        const group = el.parentElement.querySelector('.btn-select-group');
+        if (group) {
+          group.querySelectorAll('.btn-select').forEach(btn => {
+            btn.classList.toggle('selected', btn.dataset.value === el.value);
+          });
+        }
+      } else {
+        el.value = data[f.key] || '';
+        if (f.type === 'textarea') autoResize(el);
+      }
+    });
+  });
+  updatePublishButton(iv);
+}
+
+// ============================================================
+// BUILD UI
+// ============================================================
+function buildWizardTabs() {
+  const nav = document.getElementById('wizard-tabs');
+  nav.innerHTML = SLIDES.map(s =>
+    `<button class="wizard-tab${s.num === 1 ? ' active' : ''}" data-step="${s.num}" onclick="goToStep(${s.num})">
+      <span class="num">${s.num}</span>
+      <span class="label">${s.tabLabel}</span>
+    </button>`
+  ).join('');
+}
+
+function buildStepPanels() {
+  const container = document.getElementById('step-panels');
+  container.innerHTML = SLIDES.map(slide => {
+    let fieldsHtml = '';
+
+    // Slide 1: first 3 fields in grid
+    const gridFields = slide.fields.filter(f => f.grid);
+    const restFields = slide.fields.filter(f => !f.grid);
+
+    if (gridFields.length > 0) {
+      fieldsHtml += '<div class="grid-3">';
+      gridFields.forEach(f => {
+        fieldsHtml += `<div class="field-group">
+          <label class="field-label">${f.label}</label>
+          <input type="text" class="field-input" data-slide="${slide.num}" data-field="${f.key}"
+                 placeholder="${f.placeholder || ''}" oninput="onFieldChange()">
+        </div>`;
+      });
+      fieldsHtml += '</div>';
+    }
+
+    restFields.forEach(f => {
+      if (f.type === 'section_header') {
+        fieldsHtml += `<div class="section-header">${f.label}</div>`;
+      } else if (f.type === 'button_select') {
+        fieldsHtml += `<div class="field-group">
+          <label class="field-label">${f.label}</label>
+          <div class="btn-select-group">
+            ${f.options.map(opt =>
+              `<button type="button" class="btn-select" data-value="${opt}"
+                       onclick="selectOption(this, ${slide.num}, '${f.key}')">${opt}</button>`
+            ).join('')}
+          </div>
+          <input type="hidden" data-slide="${slide.num}" data-field="${f.key}">
+        </div>`;
+      } else if (f.type === 'textarea') {
+        fieldsHtml += `<div class="field-group">
+          <label class="field-label">${f.label}</label>
+          <textarea class="field-textarea" data-slide="${slide.num}" data-field="${f.key}"
+                    placeholder="${f.placeholder || ''}" rows="3"
+                    oninput="autoResize(this); onFieldChange()"></textarea>
+        </div>`;
+      } else {
+        fieldsHtml += `<div class="field-group">
+          <label class="field-label">${f.label}</label>
+          <input type="text" class="field-input" data-slide="${slide.num}" data-field="${f.key}"
+                 placeholder="${f.placeholder || ''}" oninput="onFieldChange()">
+        </div>`;
+      }
+    });
+
+    return `<div class="card${slide.num === 1 ? '' : ' hidden'}" data-panel="${slide.num}">
+      <div class="step-header">
+        <span class="step-num">${slide.num}</span>
+        <div>
+          <p class="step-count">Step ${slide.num} / 5</p>
+          <h2 class="step-title">${slide.title}</h2>
+          ${slide.subtitle ? `<p class="step-subtitle">${slide.subtitle}</p>` : ''}
+        </div>
+      </div>
+      ${fieldsHtml}
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// WIZARD NAVIGATION
+// ============================================================
+function showStep(step) {
+  currentStep = step;
+  // panels
+  document.querySelectorAll('[data-panel]').forEach(p => {
+    p.classList.toggle('hidden', parseInt(p.dataset.panel) !== step);
+  });
+  // tabs
+  document.querySelectorAll('.wizard-tab').forEach(t => {
+    t.classList.toggle('active', parseInt(t.dataset.step) === step);
+  });
+  // progress
+  document.getElementById('progress-fill').style.width = (step * 20) + '%';
+  // nav buttons
+  const prev = document.getElementById('btn-prev');
+  const next = document.getElementById('btn-next');
+  const publish = document.getElementById('btn-publish');
+  prev.classList.toggle('invisible', step === 1);
+  if (step === 5) {
+    next.classList.add('hidden');
+    publish.classList.remove('hidden');
+  } else {
+    next.classList.remove('hidden');
+    publish.classList.add('hidden');
+  }
+}
+
+function goToStep(n) {
+  saveCurrentSlide();
+  showStep(n);
+}
+function prevStep() {
+  if (currentStep > 1) { saveCurrentSlide(); showStep(currentStep - 1); }
+}
+function nextStep() {
+  if (currentStep < 5) { saveCurrentSlide(); showStep(currentStep + 1); }
+}
+
+// ============================================================
+// AUTO-SAVE
+// ============================================================
+let saveTimer = null;
+function onFieldChange() {
+  const label = document.getElementById('save-status');
+  label.textContent = '저장 중...';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    saveCurrentSlide();
+    label.textContent = '자동 저장됨';
+  }, 500);
+}
+
+function saveCurrentSlide() {
+  if (!currentInterviewId) return;
+  const iv = getInterview(currentInterviewId);
+  if (!iv) return;
+
+  SLIDES.forEach(slide => {
+    const data = {};
+    slide.fields.forEach(f => {
+      if (f.type === 'section_header') return;
+      const el = document.querySelector(`[data-slide="${slide.num}"][data-field="${f.key}"]`);
+      if (el && el.value) data[f.key] = el.value;
+    });
+    iv['slide' + slide.num] = data;
+  });
+
+  iv.updatedAt = new Date().toISOString();
+  upsertInterview(iv);
+}
+
+function selectOption(btn, slideNum, key) {
+  const group = btn.parentElement;
+  group.querySelectorAll('.btn-select').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const hidden = document.querySelector(`input[type="hidden"][data-slide="${slideNum}"][data-field="${key}"]`);
+  if (hidden) hidden.value = btn.dataset.value;
+  onFieldChange();
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+// ============================================================
+// PUBLISH
+// ============================================================
+function publishInterview() {
+  saveCurrentSlide();
+  const iv = getInterview(currentInterviewId);
+  if (!iv) return;
+
+  // Check minimum: name required
+  if (!iv.slide1.name) {
+    showToast('이름을 입력해주세요.');
+    goToStep(1);
+    return;
+  }
+
+  iv.status = 'published';
+  iv.publishedAt = new Date().toISOString();
+  upsertInterview(iv);
+
+  showToast('인터뷰가 게시되었습니다!');
+  updatePublishButton(iv);
+  showInterview(iv.id);
+}
+
+function updatePublishButton(iv) {
+  const btn = document.getElementById('btn-publish');
+  if (iv.status === 'published') {
+    btn.textContent = '게시됨 ✓';
+    btn.style.background = 'var(--color-success-50)';
+    btn.style.color = 'var(--color-success-700)';
+    btn.onclick = null;
+    btn.style.cursor = 'default';
+  } else {
+    btn.textContent = '게시하기 ✓';
+    btn.style.background = 'var(--color-success-600)';
+    btn.style.color = '#fff';
+    btn.onclick = publishInterview;
+    btn.style.cursor = 'pointer';
+  }
+}
+
+// ============================================================
+// VIEW SWITCHING
+// ============================================================
+function switchView(view) {
+  currentView = view;
+  document.getElementById('view-wizard').classList.toggle('hidden', view !== 'wizard');
+  document.getElementById('view-gallery').classList.toggle('hidden', view !== 'gallery');
+  document.getElementById('view-show').classList.toggle('hidden', view !== 'show');
+
+  document.querySelectorAll('.main-tab').forEach((t, i) => {
+    t.classList.toggle('active',
+      (i === 0 && view === 'wizard') || (i === 1 && (view === 'gallery' || view === 'show'))
+    );
+  });
+
+  if (view === 'gallery') renderGallery();
+}
+
+// ============================================================
+// GALLERY
+// ============================================================
+function renderGallery() {
+  const q = (document.getElementById('search-input').value || '').toLowerCase();
+  let interviews = getInterviews().filter(iv => iv.status === 'published');
+
+  if (q) {
+    interviews = interviews.filter(iv => {
+      const s1 = iv.slide1 || {};
+      return (s1.name || '').toLowerCase().includes(q)
+        || (s1.role || '').toLowerCase().includes(q)
+        || (s1.projectName || '').toLowerCase().includes(q);
+    });
+  }
+
+  document.getElementById('gallery-count').textContent = interviews.length + '개의 인터뷰';
+
+  const grid = document.getElementById('gallery-grid');
+  if (interviews.length === 0) {
+    grid.innerHTML = `<div class="empty-state">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+      <h3>${q ? '검색어와 일치하는 인터뷰가 없습니다.' : '아직 게시된 인터뷰가 없습니다.'}</h3>
+      <p>${q ? '다른 검색어를 입력해보세요.' : '인터뷰를 작성하고 게시해보세요.'}</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = '<div class="gallery-grid">' + interviews.map(iv => {
+    const s1 = iv.slide1 || {};
+    const s2 = iv.slide2 || {};
+    const name = s1.name || '익명';
+    const role = s1.role || '직무 미상';
+    const project = s1.projectName || '프로젝트 미상';
+    const bottleneck = s2.bottleneck || '';
+    const date = iv.updatedAt ? new Date(iv.updatedAt).toLocaleDateString('ko-KR') : '';
+
+    return `<div class="gallery-card" onclick="showInterview('${iv.id}')">
+      <div class="gallery-card-header">
+        <div>
+          <div class="gallery-card-name">${esc(name)}</div>
+          <div class="gallery-card-role">${esc(role)}</div>
+        </div>
+        <div class="avatar">${esc(name[0])}</div>
+      </div>
+      <div class="gallery-card-meta">
+        <div class="gallery-card-meta-label">프로젝트</div>
+        <div class="gallery-card-meta-value">${esc(project)}</div>
+      </div>
+      ${bottleneck ? `<div class="gallery-card-meta">
+        <div class="gallery-card-meta-label">주요 병목</div>
+        <div class="gallery-card-meta-value" style="color:var(--text-tertiary)">${esc(bottleneck)}</div>
+      </div>` : ''}
+      <div class="gallery-card-footer">
+        <span class="gallery-card-date">${date}</span>
+        <span class="gallery-card-link">자세히 보기 →</span>
+      </div>
+    </div>`;
+  }).join('') + '</div>';
+}
+
+// ============================================================
+// SHOW INTERVIEW
+// ============================================================
+function showInterview(id) {
+  const iv = getInterview(id);
+  if (!iv) return;
+  switchView('show');
+
+  const s1 = iv.slide1 || {};
+  const name = s1.name || '익명';
+  const role = s1.role || '직무 미상';
+  const project = s1.projectName || '프로젝트 미상';
+  const years = s1.years || '';
+  const meta = [role, years, project].filter(Boolean).join(' · ');
+
+  let html = '';
+
+  // Back & actions
+  html += `<div style="display:flex;align-items:center;justify-content:space-between;">
+    <button class="back-link" onclick="switchView('gallery')">
+      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      갤러리로 돌아가기
+    </button>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-export" style="font-size:12px;padding:6px 12px;" onclick="editInterview('${id}')">수정</button>
+      <button class="btn-delete" onclick="confirmDelete('${id}')">삭제</button>
+    </div>
+  </div>`;
+
+  // Profile header
+  html += `<div class="card">
+    <div class="profile-header">
+      <div class="profile-avatar">${esc(name[0])}</div>
+      <div>
+        <div class="profile-name">${esc(name)}의 AI 여정 요약</div>
+        <div class="profile-meta">${esc(meta)}</div>
+        <div class="profile-note">작성된 내용을 바탕으로 정리된 프레젠테이션 요약입니다.</div>
+      </div>
+    </div>
+  </div>`;
+
+  // Sections
+  let hasSections = false;
+  SHOW_SECTIONS.forEach(section => {
+    const slideData = iv['slide' + section.num] || {};
+    const filled = section.fields.filter(f => slideData[f.key]);
+    if (filled.length === 0) return;
+    hasSections = true;
+
+    html += `<div class="card">
+      <div class="section-title-bar">
+        <span class="section-badge">${section.num}</span>
+        <span class="section-title-text">${section.title}</span>
+      </div>
+      <div class="space-y-sm">
+        ${filled.map(f => `<div>
+          <div class="field-dt">${f.label}</div>
+          <div class="field-dd">${esc(slideData[f.key])}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  });
+
+  if (!hasSections) {
+    html += `<div class="empty-state">
+      <h3>아직 작성된 내용이 없습니다</h3>
+      <p>인터뷰를 수정하여 내용을 채워주세요.</p>
+    </div>`;
+  }
+
+  // Export
+  if (hasSections) {
+    html += `<div class="card">
+      <div class="section-title-bar">
+        <span class="section-badge">6</span>
+        <span class="section-title-text">프레젠테이션</span>
+      </div>
+      <p style="font-size:14px;color:var(--text-tertiary);margin-bottom:16px;">
+        작성된 인터뷰 내용을 마크다운 또는 PDF로 다운로드할 수 있습니다.
+      </p>
+      <div class="export-buttons">
+        <button class="btn-export" onclick="downloadMd('${id}')">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/></svg>
+          마크다운(.md)
+        </button>
+        <button class="btn-export primary" onclick="downloadPdf('${id}')">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/></svg>
+          PDF 다운로드
+        </button>
+        <button class="btn-export" onclick="copyText('${id}')">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+          텍스트 복사
+        </button>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('show-content').innerHTML = html;
+}
+
+// ============================================================
+// DELETE
+// ============================================================
+function confirmDelete(id) {
+  if (confirm('정말 삭제하시겠습니까?')) {
+    deleteInterview(id);
+    showToast('삭제되었습니다.');
+    switchView('gallery');
+  }
+}
+
+// ============================================================
+// EXPORT HELPERS
+// ============================================================
+function buildMd(id) {
+  const iv = getInterview(id);
+  if (!iv) return '';
+  const s1 = iv.slide1 || {};
+  const name = s1.name || '익명';
+  const role = s1.role || '직무 미상';
+  const project = s1.projectName || '프로젝트 미상';
+  const date = iv.updatedAt ? new Date(iv.updatedAt).toLocaleDateString('ko-KR') : '';
+
+  let md = `# ${name}의 AI 여정 요약\n\n`;
+  md += `**직무**: ${role}\n**프로젝트**: ${project}\n**날짜**: ${date}\n\n---\n\n`;
+
+  SHOW_SECTIONS.forEach(section => {
+    const data = iv['slide' + section.num] || {};
+    const filled = section.fields.filter(f => data[f.key]);
+    if (filled.length === 0) return;
+    md += `## ${section.num}. ${section.title}\n\n`;
+    filled.forEach(f => {
+      md += `**${f.label}**\n${data[f.key]}\n\n`;
+    });
+    md += `---\n\n`;
+  });
+
+  return md;
+}
+
+function downloadMd(id) {
+  const iv = getInterview(id);
+  const name = (iv && iv.slide1 && iv.slide1.name) || '인터뷰';
+  const md = buildMd(id);
+  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${name}_AI_여정_요약.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function copyText(id) {
+  const md = buildMd(id);
+  navigator.clipboard.writeText(md).then(() => showToast('텍스트가 복사되었습니다.'));
+}
+
+async function downloadPdf(id) {
+  const iv = getInterview(id);
+  if (!iv) return;
+
+  showToast('PDF 생성 중...');
+
+  try {
+    if (!window.html2pdf) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+
+    const s1 = iv.slide1 || {};
+    const name = s1.name || '익명';
+    const role = s1.role || '직무 미상';
+    const project = s1.projectName || '프로젝트 미상';
+    const years = s1.years || '';
+    const date = iv.updatedAt ? new Date(iv.updatedAt).toLocaleDateString('ko-KR') : '';
+
+    const container = document.createElement('div');
+    Object.assign(container.style, {
+      position: 'fixed', left: '-9999px', top: '0',
+      width: '210mm', padding: '28px 32px',
+      background: '#f5f5f4', color: '#1a1a1a',
+      fontFamily: "'Pretendard Variable', -apple-system, sans-serif"
+    });
+
+    // Header
+    const header = document.createElement('div');
+    Object.assign(header.style, {
+      background: '#fff', borderRadius: '16px', padding: '20px',
+      border: '1px solid #e7e5e4', marginBottom: '20px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.06)'
+    });
+    header.innerHTML = `<div style="display:flex;align-items:center;gap:16px;">
+      <div style="width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;background:#fff7ed;color:#ea580c;flex-shrink:0;"></div>
+      <div>
+        <div style="font-size:20px;font-weight:700;color:#1c1917;margin-bottom:4px;"></div>
+        <div style="font-size:13px;color:#78716c;"></div>
+        <div style="font-size:12px;color:#a8a29e;margin-top:4px;">작성된 내용을 바탕으로 정리된 프레젠테이션 요약입니다.</div>
+      </div>
+    </div>`;
+    header.querySelector('div[style*="border-radius:50%"]').textContent = name[0];
+    header.querySelector('div[style*="font-size:20px;font-weight:700;color"]').textContent = name + '의 AI 여정 요약';
+    header.querySelector('div[style*="font-size:13px"]').textContent = [role, years, project].filter(Boolean).join(' · ');
+    container.appendChild(header);
+
+    // Sections
+    SHOW_SECTIONS.forEach(section => {
+      const data = iv['slide' + section.num] || {};
+      const filled = section.fields.filter(f => data[f.key]);
+      if (filled.length === 0) return;
+
+      const card = document.createElement('div');
+      Object.assign(card.style, {
+        background: '#fff', borderRadius: '16px', padding: '20px',
+        border: '1px solid #e7e5e4', marginBottom: '16px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06)', pageBreakInside: 'avoid'
+      });
+
+      const sHeader = document.createElement('div');
+      Object.assign(sHeader.style, { display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '14px', marginBottom: '14px', borderBottom: '1px solid #e7e5e4' });
+      const badge = document.createElement('span');
+      Object.assign(badge.style, { width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '700', flexShrink: '0', background: '#fff7ed', color: '#ea580c' });
+      badge.textContent = section.num;
+      const title = document.createElement('span');
+      Object.assign(title.style, { fontSize: '15px', fontWeight: '700', color: '#1c1917' });
+      title.textContent = section.title;
+      sHeader.appendChild(badge);
+      sHeader.appendChild(title);
+      card.appendChild(sHeader);
+
+      filled.forEach(f => {
+        const lbl = document.createElement('div');
+        Object.assign(lbl.style, { fontSize: '11px', fontWeight: '600', color: '#a8a29e', marginBottom: '4px', marginTop: '12px' });
+        lbl.textContent = f.label;
+        card.appendChild(lbl);
+        const val = document.createElement('div');
+        Object.assign(val.style, { fontSize: '13px', lineHeight: '1.8', color: '#1c1917', whiteSpace: 'pre-wrap', padding: '10px 14px', background: '#fafaf9', borderRadius: '10px', border: '1px solid #e7e5e4' });
+        val.textContent = data[f.key];
+        card.appendChild(val);
+      });
+
+      container.appendChild(card);
+    });
+
+    // Footer
+    const footer = document.createElement('div');
+    Object.assign(footer.style, { textAlign: 'center', fontSize: '11px', color: '#a8a29e', paddingTop: '12px' });
+    footer.textContent = '광화문 라이언즈 · AI 여정 인터뷰 · ' + date;
+    container.appendChild(footer);
+
+    document.body.appendChild(container);
+
+    await html2pdf().set({
+      margin: [10, 10],
+      filename: name + '_AI_여정_요약.pdf',
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f5f5f4' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    }).from(container).save();
+
+    document.body.removeChild(container);
+    showToast('PDF 다운로드 완료!');
+  } catch (e) {
+    console.error('PDF error:', e);
+    showToast('PDF 생성 중 오류가 발생했습니다.');
+  }
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function esc(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ============================================================
+// DATA IMPORT/EXPORT (for sharing between devices)
+// ============================================================
+function exportAllData() {
+  const data = getInterviews();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'interviews_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (Array.isArray(data)) {
+          const existing = getInterviews();
+          const existingIds = new Set(existing.map(i => i.id));
+          const newOnes = data.filter(i => !existingIds.has(i.id));
+          saveInterviews([...newOnes, ...existing]);
+          showToast(`${newOnes.length}개 인터뷰 가져오기 완료!`);
+          if (currentView === 'gallery') renderGallery();
+        }
+      } catch (err) {
+        showToast('파일 형식이 올바르지 않습니다.');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// INIT
+init();
+</script>
+
+</body>
+</html>
