@@ -1386,108 +1386,42 @@ async function downloadPdf(id) {
   showToast('PDF 생성 중...');
 
   try {
-    // jsPDF CDN 로드
-    if (!window.jspdf) {
+    if (!window.html2pdf) {
       await new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js';
         script.onload = resolve;
         script.onerror = reject;
         document.head.appendChild(script);
       });
     }
 
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-
     const s1 = iv.slide1 || {};
     const name = s1.name || '익명';
-    const role = s1.role || '직무 미상';
-    const project = s1.projectName || '프로젝트 미상';
-    const years = s1.years || '';
-    const date = iv.updatedAt ? new Date(iv.updatedAt).toLocaleDateString('ko-KR') : '';
-    const meta = [role, years, project].filter(Boolean).join(' · ');
 
-    const pageW = 210;
-    const marginL = 20;
-    const marginR = 20;
-    const contentW = pageW - marginL - marginR;
-    let y = 20;
+    // 화면에 보이는 show-content를 직접 캡처
+    const el = document.getElementById('show-content');
 
-    function checkPage(needed) {
-      if (y + needed > 277) {
-        doc.addPage();
-        y = 20;
-      }
-    }
+    // export 버튼 영역과 back/action 바를 숨기고 캡처
+    const hideEls = el.querySelectorAll('.export-buttons, .back-link, .btn-export, .btn-delete');
+    const firstChild = el.firstElementChild; // back + actions bar
+    if (firstChild) firstChild.style.display = 'none';
+    const lastCard = el.lastElementChild; // export card
+    if (lastCard && lastCard.querySelector('.export-buttons')) lastCard.style.display = 'none';
 
-    // Title
-    doc.setFontSize(18);
-    doc.setTextColor(28, 25, 23);
-    doc.text(name + '의 AI 여정 요약', marginL, y);
-    y += 8;
+    await html2pdf().set({
+      margin: [10, 10],
+      filename: name + '_AI_여정_요약.pdf',
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f5f5f4', scrollY: 0, windowWidth: 800 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    }).from(el).save();
 
-    doc.setFontSize(11);
-    doc.setTextColor(120, 113, 108);
-    doc.text(meta, marginL, y);
-    y += 5;
-    doc.text('작성된 내용을 바탕으로 정리된 프레젠테이션 요약입니다.', marginL, y);
-    y += 10;
+    // 다시 보이게
+    if (firstChild) firstChild.style.display = '';
+    if (lastCard && lastCard.querySelector('.export-buttons')) lastCard.style.display = '';
 
-    // Divider
-    doc.setDrawColor(231, 229, 228);
-    doc.line(marginL, y, pageW - marginR, y);
-    y += 8;
-
-    // Sections
-    SHOW_SECTIONS.forEach(section => {
-      const data = iv['slide' + section.num] || {};
-      const filled = section.fields.filter(f => data[f.key]);
-      if (filled.length === 0) return;
-
-      checkPage(20);
-
-      // Section title
-      doc.setFontSize(13);
-      doc.setTextColor(28, 25, 23);
-      doc.text(section.num + '. ' + section.title, marginL, y);
-      y += 8;
-
-      filled.forEach(f => {
-        checkPage(15);
-
-        // Label
-        doc.setFontSize(9);
-        doc.setTextColor(168, 162, 158);
-        doc.text(f.label, marginL + 2, y);
-        y += 5;
-
-        // Value - split long text
-        doc.setFontSize(10);
-        doc.setTextColor(28, 25, 23);
-        const lines = doc.splitTextToSize(data[f.key], contentW - 4);
-        lines.forEach(line => {
-          checkPage(6);
-          doc.text(line, marginL + 2, y);
-          y += 5;
-        });
-        y += 4;
-      });
-
-      // Section divider
-      checkPage(8);
-      doc.setDrawColor(231, 229, 228);
-      doc.line(marginL, y, pageW - marginR, y);
-      y += 8;
-    });
-
-    // Footer
-    checkPage(10);
-    doc.setFontSize(9);
-    doc.setTextColor(168, 162, 158);
-    doc.text('광화문 라이언즈 · AI 여정 인터뷰 · ' + date, pageW / 2, 290, { align: 'center' });
-
-    doc.save(name + '_AI_여정_요약.pdf');
     showToast('PDF 다운로드 완료!');
   } catch (e) {
     console.error('PDF error:', e);
