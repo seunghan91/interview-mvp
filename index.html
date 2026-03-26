@@ -1386,15 +1386,19 @@ async function downloadPdf(id) {
   showToast('PDF 생성 중...');
 
   try {
-    if (!window.html2pdf) {
+    // jsPDF CDN 로드
+    if (!window.jspdf) {
       await new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js';
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';
         script.onload = resolve;
         script.onerror = reject;
         document.head.appendChild(script);
       });
     }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
 
     const s1 = iv.slide1 || {};
     const name = s1.name || '익명';
@@ -1402,35 +1406,38 @@ async function downloadPdf(id) {
     const project = s1.projectName || '프로젝트 미상';
     const years = s1.years || '';
     const date = iv.updatedAt ? new Date(iv.updatedAt).toLocaleDateString('ko-KR') : '';
+    const meta = [role, years, project].filter(Boolean).join(' · ');
 
-    const container = document.createElement('div');
-    Object.assign(container.style, {
-      position: 'absolute', left: '0', top: '0',
-      width: '210mm', padding: '28px 32px',
-      background: '#f5f5f4', color: '#1a1a1a',
-      fontFamily: "'Pretendard Variable', -apple-system, sans-serif",
-      zIndex: '-9999', opacity: '0.01'
-    });
+    const pageW = 210;
+    const marginL = 20;
+    const marginR = 20;
+    const contentW = pageW - marginL - marginR;
+    let y = 20;
 
-    // Header
-    const header = document.createElement('div');
-    Object.assign(header.style, {
-      background: '#fff', borderRadius: '16px', padding: '20px',
-      border: '1px solid #e7e5e4', marginBottom: '20px',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.06)'
-    });
-    header.innerHTML = `<div style="display:flex;align-items:center;gap:16px;">
-      <div style="width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;background:#fff7ed;color:#ea580c;flex-shrink:0;"></div>
-      <div>
-        <div style="font-size:20px;font-weight:700;color:#1c1917;margin-bottom:4px;"></div>
-        <div style="font-size:13px;color:#78716c;"></div>
-        <div style="font-size:12px;color:#a8a29e;margin-top:4px;">작성된 내용을 바탕으로 정리된 프레젠테이션 요약입니다.</div>
-      </div>
-    </div>`;
-    header.querySelector('div[style*="border-radius:50%"]').textContent = name[0];
-    header.querySelector('div[style*="font-size:20px;font-weight:700;color"]').textContent = name + '의 AI 여정 요약';
-    header.querySelector('div[style*="font-size:13px"]').textContent = [role, years, project].filter(Boolean).join(' · ');
-    container.appendChild(header);
+    function checkPage(needed) {
+      if (y + needed > 277) {
+        doc.addPage();
+        y = 20;
+      }
+    }
+
+    // Title
+    doc.setFontSize(18);
+    doc.setTextColor(28, 25, 23);
+    doc.text(name + '의 AI 여정 요약', marginL, y);
+    y += 8;
+
+    doc.setFontSize(11);
+    doc.setTextColor(120, 113, 108);
+    doc.text(meta, marginL, y);
+    y += 5;
+    doc.text('작성된 내용을 바탕으로 정리된 프레젠테이션 요약입니다.', marginL, y);
+    y += 10;
+
+    // Divider
+    doc.setDrawColor(231, 229, 228);
+    doc.line(marginL, y, pageW - marginR, y);
+    y += 8;
 
     // Sections
     SHOW_SECTIONS.forEach(section => {
@@ -1438,57 +1445,49 @@ async function downloadPdf(id) {
       const filled = section.fields.filter(f => data[f.key]);
       if (filled.length === 0) return;
 
-      const card = document.createElement('div');
-      Object.assign(card.style, {
-        background: '#fff', borderRadius: '16px', padding: '20px',
-        border: '1px solid #e7e5e4', marginBottom: '16px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.06)', pageBreakInside: 'avoid'
-      });
+      checkPage(20);
 
-      const sHeader = document.createElement('div');
-      Object.assign(sHeader.style, { display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '14px', marginBottom: '14px', borderBottom: '1px solid #e7e5e4' });
-      const badge = document.createElement('span');
-      Object.assign(badge.style, { width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '700', flexShrink: '0', background: '#fff7ed', color: '#ea580c' });
-      badge.textContent = section.num;
-      const title = document.createElement('span');
-      Object.assign(title.style, { fontSize: '15px', fontWeight: '700', color: '#1c1917' });
-      title.textContent = section.title;
-      sHeader.appendChild(badge);
-      sHeader.appendChild(title);
-      card.appendChild(sHeader);
+      // Section title
+      doc.setFontSize(13);
+      doc.setTextColor(28, 25, 23);
+      doc.text(section.num + '. ' + section.title, marginL, y);
+      y += 8;
 
       filled.forEach(f => {
-        const lbl = document.createElement('div');
-        Object.assign(lbl.style, { fontSize: '11px', fontWeight: '600', color: '#a8a29e', marginBottom: '4px', marginTop: '12px' });
-        lbl.textContent = f.label;
-        card.appendChild(lbl);
-        const val = document.createElement('div');
-        Object.assign(val.style, { fontSize: '13px', lineHeight: '1.8', color: '#1c1917', whiteSpace: 'pre-wrap', padding: '10px 14px', background: '#fafaf9', borderRadius: '10px', border: '1px solid #e7e5e4' });
-        val.textContent = data[f.key];
-        card.appendChild(val);
+        checkPage(15);
+
+        // Label
+        doc.setFontSize(9);
+        doc.setTextColor(168, 162, 158);
+        doc.text(f.label, marginL + 2, y);
+        y += 5;
+
+        // Value - split long text
+        doc.setFontSize(10);
+        doc.setTextColor(28, 25, 23);
+        const lines = doc.splitTextToSize(data[f.key], contentW - 4);
+        lines.forEach(line => {
+          checkPage(6);
+          doc.text(line, marginL + 2, y);
+          y += 5;
+        });
+        y += 4;
       });
 
-      container.appendChild(card);
+      // Section divider
+      checkPage(8);
+      doc.setDrawColor(231, 229, 228);
+      doc.line(marginL, y, pageW - marginR, y);
+      y += 8;
     });
 
     // Footer
-    const footer = document.createElement('div');
-    Object.assign(footer.style, { textAlign: 'center', fontSize: '11px', color: '#a8a29e', paddingTop: '12px' });
-    footer.textContent = '광화문 라이언즈 · AI 여정 인터뷰 · ' + date;
-    container.appendChild(footer);
+    checkPage(10);
+    doc.setFontSize(9);
+    doc.setTextColor(168, 162, 158);
+    doc.text('광화문 라이언즈 · AI 여정 인터뷰 · ' + date, pageW / 2, 290, { align: 'center' });
 
-    document.body.appendChild(container);
-
-    await html2pdf().set({
-      margin: [10, 10],
-      filename: name + '_AI_여정_요약.pdf',
-      image: { type: 'jpeg', quality: 0.95 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f5f5f4' },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    }).from(container).save();
-
-    document.body.removeChild(container);
+    doc.save(name + '_AI_여정_요약.pdf');
     showToast('PDF 다운로드 완료!');
   } catch (e) {
     console.error('PDF error:', e);
