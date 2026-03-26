@@ -1164,7 +1164,8 @@ function switchView(view) {
 // ============================================================
 function renderGallery() {
   const q = (document.getElementById('search-input').value || '').toLowerCase();
-  let interviews = getInterviews().filter(iv => iv.status === 'published');
+  // 이름이 있는 인터뷰 전부 표시 (published + draft)
+  let interviews = getInterviews().filter(iv => iv.slide1 && iv.slide1.name);
 
   if (q) {
     interviews = interviews.filter(iv => {
@@ -1215,7 +1216,7 @@ function renderGallery() {
         <div class="gallery-card-meta-value" style="color:var(--text-tertiary)">${esc(bottleneck)}</div>
       </div>` : ''}
       <div class="gallery-card-footer">
-        <span class="gallery-card-date">${date}</span>
+        <span class="gallery-card-date">${iv.status === 'draft' ? '📝 작성중 · ' : ''}${date}</span>
         <span class="gallery-card-link">자세히 보기 →</span>
       </div>
     </div>`;
@@ -1509,46 +1510,48 @@ function importData() {
 // ============================================================
 const API_BASE = 'https://gwangla-web.onrender.com/api/interviews';
 
-async function fetchFromServer() {
-  showToast('서버에서 인터뷰 가져오는 중...');
+async function fetchFromServer(silent) {
+  if (!silent) showToast('서버에서 인터뷰 가져오는 중...');
   try {
-    const res = await fetch(API_BASE);
+    // all=true로 draft 포함 전체 가져오기
+    const res = await fetch(API_BASE + '?all=true');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
 
-    // 서버 데이터를 localStorage 형식으로 변환
-    const existing = getInterviews();
-    const existingIds = new Set(existing.map(i => i.id));
-    let added = 0;
+    // 서버 데이터로 완전 교체 (서버가 진실의 원천)
+    const serverInterviews = data.map(iv => ({
+      id: 'server_' + iv.id,
+      slide1: iv.slide1 || {},
+      slide2: iv.slide2 || {},
+      slide3: iv.slide3 || {},
+      slide4: iv.slide4 || {},
+      slide5: iv.slide5 || {},
+      status: iv.status || 'published',
+      publishedAt: iv.publishedAt,
+      createdAt: iv.updatedAt,
+      updatedAt: iv.updatedAt
+    }));
 
-    data.forEach(iv => {
-      const localId = 'server_' + iv.id;
-      if (existingIds.has(localId)) return;
-      existing.unshift({
-        id: localId,
-        slide1: iv.slide1 || {},
-        slide2: iv.slide2 || {},
-        slide3: iv.slide3 || {},
-        slide4: iv.slide4 || {},
-        slide5: iv.slide5 || {},
-        status: 'published',
-        publishedAt: iv.publishedAt,
-        createdAt: iv.updatedAt,
-        updatedAt: iv.updatedAt
-      });
-      added++;
-    });
+    // 로컬 전용 인터뷰(server_ 안 붙은 것)는 유지
+    const localOnly = getInterviews().filter(iv => !iv.id.startsWith('server_'));
+    const merged = [...serverInterviews, ...localOnly];
+    saveInterviews(merged);
 
-    saveInterviews(existing);
-    showToast(added > 0 ? `${added}개 인터뷰를 서버에서 가져왔습니다!` : '새로운 인터뷰가 없습니다.');
+    if (!silent) showToast(serverInterviews.length + '개 인터뷰를 서버에서 가져왔습니다!');
     if (currentView === 'gallery') renderGallery();
   } catch (e) {
     console.error('Fetch error:', e);
-    showToast('서버 연결 실패. 나중에 다시 시도해주세요.');
+    if (!silent) showToast('서버 연결 실패. 로컬 데이터로 표시합니다.');
   }
 }
 
-// SEED DATA - localStorage 비어있으면 자동 삽입
+// 페이지 로드 시 서버에서 자동 fetch
+async function autoFetchOnLoad() {
+  await fetchFromServer(true);
+  renderGallery();
+}
+
+// SEED DATA - 서버 fetch 실패 시 fallback
 function seedIfEmpty() {
   const existing = getInterviews();
   if (existing.length > 0) return;
@@ -1592,6 +1595,8 @@ function seedIfEmpty() {
 // INIT
 seedIfEmpty();
 init();
+// 페이지 로드 후 서버에서 최신 데이터 자동 fetch
+autoFetchOnLoad();
 </script>
 
 </body>

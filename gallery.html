@@ -219,7 +219,11 @@
         </div>
         <button class="btn btn-secondary" onclick="fetchInterviews()">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          새로고침
+          서버 갤러리
+        </button>
+        <button class="btn btn-primary" onclick="loadSeedGallery()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          시드 갤러리
         </button>
       </div>
     </div>
@@ -534,9 +538,121 @@ function showToast(msg) {
 }
 
 // ============================================================
-// INIT — 자동으로 서버에서 가져오기
+// SEED DATA
 // ============================================================
-fetchInterviews();
+const SEED = [
+  {
+    id: 9001,
+    slide1: { name: '김민수', role: '프로덕트 매니저', years: '7년차', projectName: 'AI 기반 고객 문의 자동 분류 시스템',
+      problemDefinition: '고객센터에 하루 평균 500건 이상의 문의가 들어오는데, 담당자가 수동으로 카테고리를 분류하고 우선순위를 매기는 데 전체 업무 시간의 40%를 소모하고 있었습니다. 특히 긴급 문의(결제 오류, 계정 잠김 등)의 초기 대응이 늦어져 고객 이탈률이 증가하는 문제가 있었습니다.',
+      retrospective: '더 뾰족해졌다' },
+    slide2: { bottleneck: '매일 아침 전날 밤부터 쌓인 고객 문의 200~300건을 엑셀에 복사해서 수동 분류하는 작업이 가장 큰 병목이었습니다. 분류 기준도 사람마다 달라 일관성이 없었고, 긴급 건을 놓치는 경우도 빈번했습니다.',
+      aiPerception: 'AI가 내 역할을 대체할 거라는 막연한 불안감이 있었습니다. 코딩을 할 줄 알아야 AI를 활용할 수 있다고 생각했고, ChatGPT가 처음 나왔을 때도 "실무에는 쓸 수 없겠지"라는 선입견이 있었습니다.' },
+    slide3: { toolsUsed: 'Claude 3.5 Sonnet (메인), ChatGPT-4 (비교 검증용), Google Sheets + Apps Script, Zapier',
+      actualApplication: '1단계: Claude에게 고객 문의 50건을 주고 분류 기준(카테고리 8개 + 긴급도 3단계)을 잡았습니다.\n2단계: Google Sheets에 문의가 들어오면 Apps Script가 Claude API를 호출해서 자동 분류하는 파이프라인을 만들었습니다.\n3단계: 긴급 문의는 Zapier로 슬랙 #urgent-cs 채널에 자동 알림.\n현재 하루 평균 450건 자동 분류, 정확도 92%.',
+      blockers: 'AI가 애매한 케이스에서 할루시네이션을 일으켰습니다. "먼저 핵심 키워드 3개를 추출한 후 분류하라"는 2단계 추론 방식을 적용하니 정확도가 78%→92%로 상승했습니다.' },
+    slide4: { colleagueShift: '처음에는 "이 문의를 분류해줘"라고 지시했는데, 지금은 "이런 패턴의 문의가 늘고 있는데, 새 카테고리를 만들어야 할까?"라고 상의합니다.',
+      colleagueDetails: '"CS분류봇"이라는 커스텀 에이전트를 만들었습니다. 3개월간 프롬프트를 50번 이상 수정했고, 이제 우리 회사 서비스 맥락까지 이해합니다.',
+      systemDesignerShift: 'AI가 1차 분류 → 내가 예외 케이스만 검토 → 검토 결과를 AI에 반영하는 3단계 파이프라인. "분류하는 사람"에서 "분류 시스템을 설계하는 사람"이 되었습니다.',
+      systemDesignerDetails: '"고객 문의 트렌드 분석 월간 리포트"를 자동 생성할 수 있게 되었습니다. 이 리포트 덕에 경영진 회의에서 CS팀의 발언권이 눈에 띄게 커졌습니다.',
+      tacitToExplicit: '"결제 실패 + 재시도 불가"일 때만 긴급이라는 세밀한 기준을 프롬프트로 정리했습니다. 이 과정에서 저도 몰랐던 판단 기준을 발견했습니다.' },
+    slide5: { nextSteps: '고객 응대 초안 작성까지 확장. AI가 분류 후 답변 템플릿까지 제안하는 시스템을 다음 분기 목표로.',
+      teamApplication: '매주 금요일 30분 "AI 활용 사례 공유회" 운영. 특히 "실패한 시도"를 중심으로 이야기하는 문화를 만들어 심리적 허들을 낮추려 합니다.',
+      personalRoutine: '매일 출근 전 15분 AI 뉴스레터. 매주 수요일 점심 새 AI 도구 테스트. 매월 마지막 주 프롬프트 점검. 6개월째 유지 중.' },
+    status: 'published', updatedAt: '2026-03-25T09:00:00Z', displayName: '김민수', displayRole: '프로덕트 매니저', displayProject: 'AI 기반 고객 문의 자동 분류 시스템'
+  },
+  {
+    id: 9002,
+    slide1: { name: '이서연', role: '마케팅 매니저', years: '5년차', projectName: 'AI 콘텐츠 마케팅 자동화',
+      problemDefinition: '월 40건 이상의 블로그·SNS 콘텐츠를 기획부터 발행까지 혼자 담당하고 있었습니다. 리서치에 하루 3시간, 초안 작성에 2시간이 걸려 전략적 업무에 시간을 쓸 수 없었습니다.',
+      retrospective: '방향이 바뀌었다' },
+    slide2: { bottleneck: '키워드 리서치 → 경쟁사 분석 → 초안 작성 → 수정 → 발행의 반복. 특히 리서치 단계에서 탭을 20개씩 열어놓고 정보를 수집하는 게 가장 비효율적이었습니다.',
+      aiPerception: '"AI가 쓴 글은 금방 티가 난다"는 인식이 강했습니다. 회사 톤앤매너를 못 맞출 거라 생각했고, 결국 다 다시 써야 할 바에는 처음부터 직접 쓰는 게 낫다고 생각했습니다.' },
+    slide3: { toolsUsed: 'Claude (메인 작성), Perplexity (리서치), Notion AI (정리), Canva AI (이미지)',
+      actualApplication: 'Claude에게 우리 브랜드 톤앤매너 가이드를 학습시키고, "리서치 요약 → 아웃라인 → 초안" 3단계 프롬프트 체인을 만들었습니다. Perplexity로 최신 트렌드를 수집하고, 그 결과를 Claude에게 넘겨 콘텐츠를 생성합니다.',
+      blockers: '초기에는 AI가 생성한 콘텐츠가 너무 일반적이었습니다. 해결책: 과거 성과 좋았던 콘텐츠 30개를 분석해서 "우리만의 콘텐츠 공식"을 프롬프트에 녹였더니 퀄리티가 확 올랐습니다.' },
+    slide4: { colleagueShift: '"이 주제로 블로그 써줘"에서 "이 데이터를 보고 독자가 가장 궁금해할 포인트 3가지를 뽑아줘"로 바뀌었습니다.',
+      colleagueDetails: '"마케팅 라이터 봇"을 만들어 브랜드 보이스, 타깃 독자, SEO 키워드를 모두 학습시켰습니다. 이제 초안 퀄리티가 70% 수준이라 수정만 하면 됩니다.',
+      systemDesignerShift: '콘텐츠 생산 파이프라인을 설계했습니다: 트렌드 수집(Perplexity) → 아웃라인(Claude) → 초안(Claude) → 이미지(Canva) → 최종 편집(나) → 발행. 생산성이 3배 증가.',
+      systemDesignerDetails: '이전에는 불가능했던 A/B 테스트용 카피 10개 동시 생성, 다국어 콘텐츠 로컬라이제이션이 가능해졌습니다.',
+      tacitToExplicit: '"좋은 마케팅 카피"에 대한 감각을 체크리스트로 만들었습니다: 훅(첫 문장), 공감 포인트, CTA 명확성, 브랜드 톤 일치도 등 8가지 기준.' },
+    slide5: { nextSteps: '콘텐츠 성과 분석까지 AI로 자동화. "이번 달 어떤 주제가 가장 반응이 좋았고, 다음 달 추천 주제는?"까지 자동 리포트.',
+      teamApplication: '다른 팀 마케터들에게 프롬프트 템플릿을 공유하고, 월 1회 "AI 마케팅 워크숍" 운영 예정.',
+      personalRoutine: '매주 월요일: 지난 주 콘텐츠 성과 + AI 분석. 매일 점심: AI 마케팅 사례 1개 스크랩. 프롬프트 라이브러리를 Notion에 계속 축적 중.' },
+    status: 'published', updatedAt: '2026-03-24T14:00:00Z', displayName: '이서연', displayRole: '마케팅 매니저', displayProject: 'AI 콘텐츠 마케팅 자동화'
+  },
+  {
+    id: 9003,
+    slide1: { name: '박준혁', role: '데이터 분석가', years: '4년차', projectName: '비정형 데이터 인사이트 추출 자동화',
+      problemDefinition: '매주 고객 인터뷰 녹취록 10~15건, 설문 주관식 응답 500건 이상을 수동으로 읽고 패턴을 찾아 리포트를 작성하는 데 주 2일을 소모하고 있었습니다.',
+      retrospective: '그대로 진행했다' },
+    slide2: { bottleneck: '정량 데이터 분석은 SQL과 Python으로 자동화했지만, 정성적 데이터(인터뷰, 주관식, VOC)는 완전히 수작업이었습니다. 엑셀에 복사 → 형광펜 → 키워드 추출 → 분류 → 리포트 작성의 반복.',
+      aiPerception: 'NLP 모델을 직접 학습시키려면 데이터가 부족하고, 기존 감성분석 API는 한국어 정확도가 낮아 포기했던 경험이 있었습니다. LLM이 이 문제를 풀 수 있을 거라는 기대는 있었지만 환각이 걱정이었습니다.' },
+    slide3: { toolsUsed: 'Claude API (분석 엔진), Python (파이프라인), Google BigQuery (저장), Looker Studio (시각화)',
+      actualApplication: 'Python 스크립트로 녹취록/설문 데이터를 Claude API에 보내 "주제 분류 + 감성 분석 + 핵심 인사이트 3줄 요약"을 자동 추출합니다. 결과는 BigQuery에 적재하고 Looker Studio 대시보드로 실시간 모니터링.',
+      blockers: '긴 녹취록(1만 자 이상)에서 맥락을 잃어버리는 문제. 해결: 문서를 2000자 청크로 나누고, 각 청크 요약 → 전체 종합 요약의 2단계 방식을 적용. 또 "분석 기준 프레임워크"를 프롬프트에 명시하니 일관성이 크게 향상.' },
+    slide4: { colleagueShift: 'AI에게 "이 데이터 분석해줘"가 아니라 "이 프레임워크로 분석하되, 기존 가설과 다른 패턴이 있으면 특히 강조해줘"라고 맥락을 제공합니다.',
+      colleagueDetails: '"VOC 분석 에이전트"를 만들어 우리 서비스의 핵심 지표, 고객 세그먼트, 주요 pain point 히스토리를 학습시켰습니다.',
+      systemDesignerShift: '데이터 수집 → AI 1차 분석 → 이상치 플래깅 → 내가 검증 → 최종 인사이트 도출의 5단계 시스템. 주 2일 걸리던 작업이 반나절로 줄었습니다.',
+      systemDesignerDetails: '실시간 VOC 모니터링이 가능해졌습니다. 특정 키워드 급증 시 슬랙 알림이 오고, 주간 트렌드 리포트가 자동 생성됩니다. 이전에는 월간 리포트가 한계였습니다.',
+      tacitToExplicit: '"좋은 인사이트"의 기준을 구체화했습니다: 행동 변화를 유도할 수 있는가, 정량 데이터와 교차 검증 가능한가, 기존 가설을 강화하거나 반박하는가.' },
+    slide5: { nextSteps: '인사이트에서 액션 아이템까지 자동 추천하는 시스템. "이 VOC 트렌드가 계속되면 어떤 제품 개선이 필요한지"까지 제안.',
+      teamApplication: 'PM팀과 공동으로 "AI 기반 고객 목소리 대시보드"를 구축해 누구나 실시간으로 고객 인사이트에 접근할 수 있게 할 예정.',
+      personalRoutine: '매주 금요일: 이번 주 AI 분석 결과 vs 수동 검증 결과 비교 → 프롬프트 개선. 월 1회: 새로운 LLM 출시되면 벤치마크 테스트.' },
+    status: 'published', updatedAt: '2026-03-23T11:00:00Z', displayName: '박준혁', displayRole: '데이터 분석가', displayProject: '비정형 데이터 인사이트 추출 자동화'
+  },
+  {
+    id: 9004,
+    slide1: { name: '최유진', role: 'UX 디자이너', years: '6년차', projectName: 'AI 활용 사용성 테스트 자동 분석',
+      problemDefinition: '분기마다 사용성 테스트를 진행하는데, 영상 10~15개를 시청하고 행동 패턴을 코딩하는 데만 2주가 걸렸습니다. 테스트 결과가 나올 때쯤이면 이미 다음 스프린트가 시작되어 반영이 늦어지는 악순환.',
+      retrospective: '더 뾰족해졌다' },
+    slide2: { bottleneck: '영상을 1.5배속으로 돌리면서 "여기서 멈칫했다", "여기서 뒤로갔다" 같은 행동을 타임스탬프와 함께 기록하는 작업이 가장 고통스러웠습니다. 정성 데이터라 자동화가 불가능하다고 생각했습니다.',
+      aiPerception: '디자인은 창의적 영역이라 AI가 도움이 안 될 거라 생각했습니다. Midjourney 같은 이미지 생성 도구만 AI라고 인식했고, 분석에 AI를 쓴다는 발상 자체가 없었습니다.' },
+    slide3: { toolsUsed: 'Clova Note (녹취), Claude (분석), FigJam (시각화), Notion (문서화)',
+      actualApplication: '사용성 테스트 영상을 Clova Note로 자동 녹취 → Claude에게 "UX 사용성 분석 프레임워크"로 분석 요청 → 행동 패턴, pain point, 감정 변화를 자동 추출 → FigJam에 어피니티 다이어그램으로 시각화.',
+      blockers: '사용자의 비언어적 행동(망설임, 한숨 등)을 녹취록만으로는 포착 못하는 한계. 해결: 관찰 노트를 함께 입력하는 하이브리드 방식을 채택. AI 분석 80% + 수동 보완 20%가 최적의 균형점이었습니다.' },
+    slide4: { colleagueShift: '"이 녹취록에서 pain point 찾아줘"에서 "이전 3번의 테스트 결과와 비교해서 개선된 점과 새로 발견된 이슈를 구분해줘"로 진화했습니다.',
+      colleagueDetails: '"UX 리서치 어시스턴트" 프롬프트를 만들어 닐슨 10가지 휴리스틱, 우리 제품 디자인 시스템, 이전 테스트 결과를 맥락으로 제공합니다.',
+      systemDesignerShift: '테스트 설계 → 진행 → 녹취 → AI 분석 → 인사이트 정리 → 디자인 제안까지 2주 → 3일로 단축. 스프린트 내에 결과를 반영할 수 있게 되었습니다.',
+      systemDesignerDetails: '간이 사용성 테스트를 매주 2~3건씩 진행할 수 있게 되어, "분기 1회 대규모 테스트"에서 "상시 소규모 테스트" 문화로 전환했습니다.',
+      tacitToExplicit: '"이 인터페이스는 뭔가 불편하다"는 디자이너 직관을 "인지 부하 지표"로 분류했습니다: 클릭 수, 탐색 시간, 되돌아가기 횟수, 도움말 접근 빈도 등.' },
+    slide5: { nextSteps: '실시간 사용자 행동 모니터링 + AI 자동 분석. Hotjar 데이터를 Claude로 분석해 "이번 주 가장 많이 이탈한 페이지와 추정 원인" 자동 리포트.',
+      teamApplication: 'PM, 개발팀과 "UX 인사이트 공유 채널"을 만들어 테스트 결과를 실시간으로 공유. 비디자이너도 사용성 이슈를 이해할 수 있도록 AI가 평이한 언어로 요약.',
+      personalRoutine: '매주 월요일: 지난 주 사용자 피드백 AI 분석. 격주 목요일: 간이 사용성 테스트 1건 + AI 분석. 월 1회: UX AI 도구 신규 출시 체크.' },
+    status: 'published', updatedAt: '2026-03-22T16:00:00Z', displayName: '최유진', displayRole: 'UX 디자이너', displayProject: 'AI 활용 사용성 테스트 자동 분석'
+  },
+  {
+    id: 9005,
+    slide1: { name: '정하늘', role: '인사(HR) 담당자', years: '3년차', projectName: 'AI 기반 채용 프로세스 효율화',
+      problemDefinition: '시즌마다 지원서 200~300건을 수동으로 스크리닝하고, 면접 질문을 직무별로 준비하는 데 팀 전체가 3주를 소모했습니다. 서류 평가 기준의 일관성도 문제였습니다.',
+      retrospective: '더 뾰족해졌다' },
+    slide2: { bottleneck: '지원서 PDF를 하나씩 열어 핵심 경력을 추출하고, 직무 요건과 매칭하는 작업이 가장 힘들었습니다. 특히 비슷한 스펙의 지원자들 사이에서 미묘한 차이를 구분하는 게 피곤했습니다.',
+      aiPerception: '채용에 AI를 쓰면 편향이 생기지 않을까 걱정했습니다. 또 지원자 개인정보를 외부 AI에 입력해도 되는지 보안/컴플라이언스 이슈가 가장 큰 장벽이었습니다.' },
+    slide3: { toolsUsed: 'Claude (분석, 온프레미스 API), Python (자동화), Google Forms (면접 평가)',
+      actualApplication: '1단계: 지원서 PDF에서 Python으로 텍스트 추출 → Claude API로 "직무 적합도 점수 + 핵심 강점 3가지 + 우려 사항" 자동 생성.\n2단계: 직무별 면접 질문 뱅크를 만들고, 지원자 이력 기반 맞춤 질문을 AI가 추천.\n3단계: 면접 후 평가 코멘트를 AI가 구조화해서 비교 매트릭스 자동 생성.',
+      blockers: '개인정보 보안 이슈. 해결: 사내 프록시를 통한 API 호출로 데이터가 외부에 저장되지 않도록 조치. 법무팀과 함께 AI 활용 가이드라인을 만들었습니다. 또 AI 평가 결과를 "참고 자료"로만 활용하고 최종 판단은 반드시 사람이 하는 원칙을 세웠습니다.' },
+    slide4: { colleagueShift: '"이 지원서 평가해줘"가 아니라 "우리 팀 문화와 이 직무에서 중요한 역량 5가지 관점에서, 이 지원자의 잠재력을 분석해줘"로 질문이 구체화되었습니다.',
+      colleagueDetails: '"채용 분석 어시스턴트"를 만들어 우리 회사 인재상, 직무별 핵심 역량, 과거 우수 인재 프로필을 학습시켰습니다.',
+      systemDesignerShift: '서류 접수 → AI 1차 스크리닝 → HR 검토 → AI 맞춤 면접 질문 생성 → 면접 → AI 평가 구조화의 6단계 시스템. 3주 → 1주로 단축.',
+      systemDesignerDetails: '지원자 경험도 개선되었습니다. AI 분석 덕분에 불합격 통보 시에도 "어떤 부분을 보완하면 좋을지" 구체적 피드백을 줄 수 있게 되었습니다.',
+      tacitToExplicit: '"이 사람은 우리 팀에 맞을 것 같다"는 직관을 분해했습니다: 기술적합도, 문화적합도, 성장잠재력, 커뮤니케이션 스타일, 자기주도성 5가지 축으로 평가 기준을 문서화.' },
+    slide5: { nextSteps: '온보딩 과정에도 AI 적용. 신규 입사자의 백그라운드에 맞춰 맞춤형 온보딩 커리큘럼을 AI가 설계하는 시스템.',
+      teamApplication: 'HR팀 전원이 AI를 활용할 수 있도록 "AI 채용 툴킷"을 만들어 배포. 다른 부서 채용 담당자에게도 교육 세션 제공.',
+      personalRoutine: '매주: AI 스크리닝 결과 vs 실제 면접 결과 비교해서 프롬프트 정확도 개선. 월 1회: HR 테크 커뮤니티에서 AI 활용 사례 수집.' },
+    status: 'published', updatedAt: '2026-03-21T10:00:00Z', displayName: '정하늘', displayRole: '인사(HR) 담당자', displayProject: 'AI 기반 채용 프로세스 효율화'
+  }
+];
+
+function loadSeedGallery() {
+  interviews = SEED;
+  render();
+  showToast('시드 갤러리 5명 로드 완료');
+}
+
+// ============================================================
+// INIT — 시드 갤러리로 시작
+// ============================================================
+loadSeedGallery();
 </script>
 
 </body>
