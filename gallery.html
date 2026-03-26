@@ -510,24 +510,15 @@ async function downloadPdf(id) {
     if (exportCard) exportCard.style.display = 'none';
     if (backBtn) backBtn.style.display = 'none';
 
-    // A4에 맞게 폭 강제 축소 (190mm ≈ 718px)
-    const origMaxWidth = el.style.maxWidth;
-    const origPadding = el.style.padding;
-    el.style.maxWidth = '680px';
-    el.style.padding = '0';
-
     await html2pdf().set({
-      margin: [10, 8],
+      margin: [10, 6, 10, 6],
       filename: name + '_AI_여정_요약.pdf',
       image: { type: 'jpeg', quality: 0.95 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f5f5f4', scrollY: 0, windowWidth: 700 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f5f5f4', scrollY: 0, windowWidth: 650 },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     }).from(el).save();
 
-    // 복원
-    el.style.maxWidth = origMaxWidth;
-    el.style.padding = origPadding;
     if (exportCard) exportCard.style.display = '';
     if (backBtn) backBtn.style.display = '';
     showToast('PDF 다운로드 완료!');
