@@ -174,7 +174,7 @@
 
   .field-item + .field-item { margin-top: 12px; }
   .field-label { font-size: 12px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 4px; }
-  .field-value { font-size: 14px; line-height: 1.8; white-space: pre-wrap; }
+  .field-value { font-size: 14px; line-height: 1.8; white-space: pre-wrap; overflow-wrap: break-word; word-break: break-word; }
 
   /* ── Export ── */
   .export-row { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -510,15 +510,24 @@ async function downloadPdf(id) {
     if (exportCard) exportCard.style.display = 'none';
     if (backBtn) backBtn.style.display = 'none';
 
+    // A4에 맞게 폭 강제 축소 (190mm ≈ 718px)
+    const origMaxWidth = el.style.maxWidth;
+    const origPadding = el.style.padding;
+    el.style.maxWidth = '680px';
+    el.style.padding = '0';
+
     await html2pdf().set({
-      margin: [10, 10],
+      margin: [10, 8],
       filename: name + '_AI_여정_요약.pdf',
       image: { type: 'jpeg', quality: 0.95 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f5f5f4', scrollY: 0, windowWidth: 960 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f5f5f4', scrollY: 0, windowWidth: 700 },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     }).from(el).save();
 
+    // 복원
+    el.style.maxWidth = origMaxWidth;
+    el.style.padding = origPadding;
     if (exportCard) exportCard.style.display = '';
     if (backBtn) backBtn.style.display = '';
     showToast('PDF 다운로드 완료!');
