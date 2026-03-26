@@ -724,6 +724,7 @@
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         <input type="text" class="search-input" id="search-input" placeholder="이름, 직무, 프로젝트 검색..." oninput="renderGallery()">
       </div>
+      <button class="btn btn-secondary" style="font-size:13px;padding:8px 16px;" onclick="fetchFromServer()">서버에서 가져오기</button>
       <button class="btn btn-primary" style="font-size:13px;padding:8px 16px;" onclick="startOrContinueInterview()">+ 인터뷰 작성</button>
     </div>
   </div>
@@ -1501,6 +1502,50 @@ function importData() {
     reader.readAsText(file);
   };
   input.click();
+}
+
+// ============================================================
+// FETCH FROM SERVER (gwangla-web)
+// ============================================================
+const API_BASE = 'https://gwangla-web.onrender.com/api/interviews';
+
+async function fetchFromServer() {
+  showToast('서버에서 인터뷰 가져오는 중...');
+  try {
+    const res = await fetch(API_BASE);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    // 서버 데이터를 localStorage 형식으로 변환
+    const existing = getInterviews();
+    const existingIds = new Set(existing.map(i => i.id));
+    let added = 0;
+
+    data.forEach(iv => {
+      const localId = 'server_' + iv.id;
+      if (existingIds.has(localId)) return;
+      existing.unshift({
+        id: localId,
+        slide1: iv.slide1 || {},
+        slide2: iv.slide2 || {},
+        slide3: iv.slide3 || {},
+        slide4: iv.slide4 || {},
+        slide5: iv.slide5 || {},
+        status: 'published',
+        publishedAt: iv.publishedAt,
+        createdAt: iv.updatedAt,
+        updatedAt: iv.updatedAt
+      });
+      added++;
+    });
+
+    saveInterviews(existing);
+    showToast(added > 0 ? `${added}개 인터뷰를 서버에서 가져왔습니다!` : '새로운 인터뷰가 없습니다.');
+    if (currentView === 'gallery') renderGallery();
+  } catch (e) {
+    console.error('Fetch error:', e);
+    showToast('서버 연결 실패. 나중에 다시 시도해주세요.');
+  }
 }
 
 // SEED DATA - localStorage 비어있으면 자동 삽입
